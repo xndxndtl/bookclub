@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:bookclub.app/firebase_options.dart';
-// import 'package:flutter_naver_login/flutter_naver_login.dart';
-// import 'package:kakao_flutter_sdk/all.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:bookclub.app/firebase_options.dart'; // 경로 수정 필요
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Flutter 엔진 초기화를 보장
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, // Firebase 초기화
+    options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(MyApp());
 }
@@ -38,6 +37,7 @@ class _SignInScreenState extends State<SignInScreen> {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> _signInWithGoogle() async {
     try {
@@ -50,7 +50,7 @@ class _SignInScreenState extends State<SignInScreen> {
       final UserCredential userCredential = await _auth.signInWithCredential(credential);
 
       if (userCredential.user != null) {
-        print("Logged in with Google: ${userCredential.user!.uid}");
+        await saveUserData(userCredential.user!); // 사용자 데이터 저장
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => MyClubsScreen()),
@@ -63,22 +63,20 @@ class _SignInScreenState extends State<SignInScreen> {
       );
     }
   }
-  /*
-  Future<void> _signInWithGoogle() async {
+
+  Future<void> saveUserData(User user) async {
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-      final UserCredential userCredential = await _auth.signInWithCredential(credential);
-      print("Logged in with Google: ${userCredential.user!.uid}");
+      await _firestore.collection('users').doc(user.uid).set({
+        'name': user.displayName,
+        'email': user.email,
+        'photoUrl': user.photoURL,
+        'lastSignIn': FieldValue.serverTimestamp(),
+      });
     } catch (e) {
-      print("Failed to sign in with Google: $e");
+      print("Failed to save user data: $e");
     }
   }
-  */
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -147,237 +145,96 @@ class _SignInScreenState extends State<SignInScreen> {
 }
 
 class MyClubsScreen extends StatelessWidget {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Stream<QuerySnapshot> getUserClubs() {
+    return _firestore.collection('clubs')
+        .where('createdBy', isEqualTo: _auth.currentUser?.uid)
+        .snapshots();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("My Clubs"),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text("You aren't a member of any clubs"),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                // 클럽 생성 로직
-                print("Create a new club");
-              },
-              child: Text("Create a new club"),
-            ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                // 클럽 가입 로직
-                print("Join a book club");
-              },
-              child: Text("Join a book club"),
-            ),
-          ],
-        ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: getUserClubs(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(child: Text("You aren't a member of any clubs"));
+          }
+          final clubs = snapshot.data!.docs;
+          return ListView.builder(
+            itemCount: clubs.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(clubs[index]['name']),
+                subtitle: Text(clubs[index]['description']),
+              );
+            },
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await _createNewClub(context);
+        },
+        child: Icon(Icons.add),
       ),
     );
   }
-}
 
-/*
+  Future<void> _createNewClub(BuildContext context) async {
+    TextEditingController clubNameController = TextEditingController();
+    TextEditingController clubDescriptionController = TextEditingController();
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();  // Flutter 엔진 초기화 보장
- /* await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  ); */
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    print("Firebase initialized successfully.");
-  } catch (e) {
-    print("Firebase initialization failed: $e");
-  }
-  runApp(SignInScreen());
-}
-
-
-class SignInScreen extends StatefulWidget {
-  @override
-  _SignInScreenState createState() => _SignInScreenState();
-}
-
-class _SignInScreenState extends State<SignInScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
-  Future<void> _signInWithGoogle() async {
-    try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-      final UserCredential userCredential = await _auth.signInWithCredential(credential);
-      print("Logged in with Google: ${userCredential.user!.uid}");
-    } catch (e) {
-      print("Failed to sign in with Google: $e");
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Sign In"),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                hintText: "Your email",
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Create a New Club"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                controller: clubNameController,
+                decoration: InputDecoration(labelText: "Club Name"),
               ),
-            ),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                hintText: "Password",
+              TextField(
+                controller: clubDescriptionController,
+                decoration: InputDecoration(labelText: "Club Description"),
               ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // 로그인 로직 추가
-              },
-              child: Text("SIGN IN"),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("Cancel"),
             ),
             TextButton(
-              onPressed: () {
-                // 비밀번호 재설정 또는 회원가입 로직 추가
+              onPressed: () async {
+                if (clubNameController.text.isNotEmpty &&
+                    clubDescriptionController.text.isNotEmpty) {
+                  await _firestore.collection('clubs').add({
+                    'name': clubNameController.text,
+                    'description': clubDescriptionController.text,
+                    'createdBy': _auth.currentUser?.uid,
+                    'createdAt': FieldValue.serverTimestamp(),
+                  });
+                  Navigator.pop(context);
+                }
               },
-              child: Text("Forgot password?"),
-            ),
-            TextButton(
-              onPressed: () {
-                // 회원가입 화면 이동 로직 추가
-              },
-              child: Text("New to Bookclubs? Create Your Account"),
-            ),
-            ElevatedButton(
-              onPressed: _signInWithGoogle,
-              child: Text("Continue with Google"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white, // 버튼 배경색
-                foregroundColor: Colors.black, // 글자색
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // Facebook 로그인 로직 추가
-              },
-              child: Text("Continue with Facebook"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-              ),
+              child: Text("Create"),
             ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 }
-
-
-
-/*
-class LoginScreen extends StatefulWidget {
-  @override
-  _LoginScreenState createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Login"),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            ElevatedButton(
-              child: Text("Sign in with Google"),
-              onPressed: _signInWithGoogle,
-            ),
- /*           ElevatedButton(
-              child: Text("Sign in with Naver"),
-              onPressed: _signInWithNaver,
-            ),
-            ElevatedButton(
-              child: Text("Sign in with Kakao"),
-              onPressed: _signInWithKakao,
-            ), */
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _signInWithGoogle() async {
-
-    try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-      final UserCredential userCredential = await _auth.signInWithCredential(credential);
-      print("Logged in with Google: ${userCredential.user}");
-    } catch (e) {
-      print("Failed to sign in with Google: $e");
-    }
-  }
-/*
-  Future<void> _signInWithNaver() async {
-    try {
-      NaverLoginResult res = await FlutterNaverLogin.logIn();
-      print("Logged in with Naver: ${res.account}");
-    } catch (e) {
-      print("Failed to sign in with Naver: $e");
-    }
-  }
-
-  Future<void> _signInWithKakao() async {
-    try {
-      bool isInstalled = await isKakaoTalkInstalled();
-      var result = isInstalled
-          ? await UserApi.instance.loginWithKakaoTalk()
-          : await UserApi.instance.loginWithKakaoAccount();
-      print("Logged in with Kakao: $result");
-    } catch (e) {
-      print("Failed to sign in with Kakao: $e");
-    }
-  }
- */
-}
-
-/*
-await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-);
- */
-
- */
-*/
-
