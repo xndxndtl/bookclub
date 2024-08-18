@@ -1,7 +1,10 @@
+// lib/screens/sign_in_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'my_clubs_screen.dart';
+import 'home_screen.dart';
 import '../services/auth_service.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -10,7 +13,8 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
-
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -19,10 +23,10 @@ class _SignInScreenState extends State<SignInScreen> {
     try {
       final UserCredential userCredential = await AuthService().signInWithGoogle();
       if (userCredential.user != null) {
-        await saveUserData(userCredential.user!); // 사용자 데이터 저장
+        await saveUserData(userCredential.user!);  // 사용자 데이터 저장
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => MyClubsScreen()),
+          MaterialPageRoute(builder: (context) => HomeScreen()),  // 로그인 후 홈 화면으로 이동
         );
       }
     } catch (e) {
@@ -72,7 +76,7 @@ class _SignInScreenState extends State<SignInScreen> {
             ),
             ElevatedButton(
               onPressed: () {
-                // 로그인 로직 추가
+                // 이메일 및 패스워드로 로그인 로직 추가 가능
               },
               child: Text("SIGN IN"),
             ),

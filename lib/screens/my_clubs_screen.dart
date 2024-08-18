@@ -1,7 +1,9 @@
+// lib/screens/my_clubs_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'club_creation_success_screen.dart';
+import 'add_member_screen.dart';
 
 class MyClubsScreen extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -32,9 +34,21 @@ class MyClubsScreen extends StatelessWidget {
           return ListView.builder(
             itemCount: clubs.length,
             itemBuilder: (context, index) {
+              final club = clubs[index];
               return ListTile(
-                title: Text(clubs[index]['name']),
-                subtitle: Text(clubs[index]['description']),
+                title: Text(club['name']),
+                subtitle: Text(club['description']),
+                trailing: IconButton(
+                  icon: Icon(Icons.person_add),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddMemberScreen(clubId: club.id),
+                      ),
+                    );
+                  },
+                ),
               );
             },
           );
@@ -80,25 +94,16 @@ class MyClubsScreen extends StatelessWidget {
               onPressed: () async {
                 if (clubNameController.text.isNotEmpty &&
                     clubDescriptionController.text.isNotEmpty) {
-                  await _firestore.collection('clubs').add({
+                  // 클럽 생성 후 성공 화면으로 이동
+                  await FirebaseFirestore.instance.collection('clubs').add({
                     'name': clubNameController.text,
                     'description': clubDescriptionController.text,
-                    'createdBy': _auth.currentUser?.uid,
+                    'createdBy': FirebaseAuth.instance.currentUser?.uid,
                     'createdAt': FieldValue.serverTimestamp(),
                   });
 
                   Navigator.pop(context);
-
-                  // 클럽 생성 후 성공 화면으로 이동
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ClubCreationSuccessScreen(
-                        clubName: clubNameController.text,
-                        inviteLink: "https://bookclubs.com/clubs/6049649/join/363631/",
-                      ),
-                    ),
-                  );
+                  // 클럽 생성 후 MyClubsScreen으로 돌아오게 됩니다.
                 }
               },
               child: Text("Create"),
