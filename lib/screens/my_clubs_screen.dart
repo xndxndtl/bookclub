@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'add_member_screen.dart';
+import 'club_events_screen.dart';
+import 'club_management_screen.dart';
 
 class MyClubsScreen extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -38,16 +40,45 @@ class MyClubsScreen extends StatelessWidget {
               return ListTile(
                 title: Text(club['name']),
                 subtitle: Text(club['description']),
-                trailing: IconButton(
-                  icon: Icon(Icons.person_add),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AddMemberScreen(clubId: club.id),
+                onTap: () {
+                  // 클럽 관리 화면으로 이동
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ClubManagementScreen(
+                        clubId: club.id,
+                        clubName: club['name'],
+                        clubDescription: club['description'],
                       ),
-                    );
-                  },
+                    ),
+                  );
+                },
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.event),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ClubEventsScreen(clubId: club.id),
+                          ),
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.person_add),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AddMemberScreen(clubId: club.id),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               );
             },
@@ -103,7 +134,6 @@ class MyClubsScreen extends StatelessWidget {
                   });
 
                   Navigator.pop(context);
-                  // 클럽 생성 후 MyClubsScreen으로 돌아오게 됩니다.
                 }
               },
               child: Text("Create"),
