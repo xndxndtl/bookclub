@@ -1,10 +1,6 @@
-// lib/screens/my_clubs_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'add_member_screen.dart';
-import 'club_events_screen.dart';
 import 'club_management_screen.dart';
 
 class MyClubsScreen extends StatelessWidget {
@@ -34,62 +30,79 @@ class MyClubsScreen extends StatelessWidget {
           }
           final clubs = snapshot.data!.docs;
           return ListView.builder(
+            padding: EdgeInsets.all(16.0),
             itemCount: clubs.length,
             itemBuilder: (context, index) {
               final club = clubs[index];
-              return ListTile(
-                title: Text(club['name']),
-                subtitle: Text(club['description']),
-                onTap: () {
-                  // 클럽 관리 화면으로 이동
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ClubManagementScreen(
-                        clubId: club.id,
-                        clubName: club['name'],
-                        clubDescription: club['description'],
+
+              // DocumentSnapshot의 데이터를 Map으로 캐스팅
+              final Map<String, dynamic>? clubData = club.data() as Map<String, dynamic>?;
+
+              // members 필드가 존재하는지 확인
+              final List<dynamic> members = clubData != null && clubData.containsKey('members')
+                  ? (clubData['members'] as List<dynamic>)
+                  : [];
+
+              return Card(
+                margin: EdgeInsets.only(bottom: 16.0),
+                elevation: 2.0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  contentPadding: EdgeInsets.all(16.0),
+                  leading: Icon(Icons.groups, size: 48, color: Colors.orange),
+                  title: Text(
+                    clubData?['name'] ?? 'Unnamed Club',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                  subtitle: Row(
+                    children: [
+                      Icon(Icons.person, size: 16),
+                      SizedBox(width: 4),
+                      Text(
+                        "${members.length} Member${members.length > 1 ? 's' : ''}",
+                        style: TextStyle(fontSize: 14),
                       ),
-                    ),
-                  );
-                },
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.event),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ClubEventsScreen(clubId: club.id),
-                          ),
-                        );
-                      },
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.person_add),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AddMemberScreen(clubId: club.id),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
+                    ],
+                  ),
+                  onTap: () {
+                    // 클럽 관리 화면으로 이동
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ClubManagementScreen(
+                          clubId: club.id,
+                          clubName: clubData?['name'] ?? 'Unnamed Club',
+                          clubDescription: clubData?['description'] ?? '',
+                          memberCount: members.length,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               );
             },
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await _createNewClub(context);
-        },
-        child: Icon(Icons.add),
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: ElevatedButton.icon(
+          onPressed: () async {
+            await _createNewClub(context);
+          },
+          icon: Icon(Icons.add),
+          label: Text("Create a new club"),
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.symmetric(vertical: 16.0),
+            backgroundColor: Colors.orange,  // primary 대신 backgroundColor 사용
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            textStyle: TextStyle(fontSize: 16),
+          ),
+        ),
       ),
     );
   }
@@ -125,12 +138,13 @@ class MyClubsScreen extends StatelessWidget {
               onPressed: () async {
                 if (clubNameController.text.isNotEmpty &&
                     clubDescriptionController.text.isNotEmpty) {
-                  // 클럽 생성 후 성공 화면으로 이동
+                  // 클럽 생성 시 members 필드를 함께 추가
                   await FirebaseFirestore.instance.collection('clubs').add({
                     'name': clubNameController.text,
                     'description': clubDescriptionController.text,
                     'createdBy': FirebaseAuth.instance.currentUser?.uid,
                     'createdAt': FieldValue.serverTimestamp(),
+                    'members': [FirebaseAuth.instance.currentUser?.uid], // members 필드 추가
                   });
 
                   Navigator.pop(context);

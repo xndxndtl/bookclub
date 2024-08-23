@@ -29,6 +29,9 @@ dependencies:
   google_sign_in: ^6.2.1
   cloud_firestore: ^4.14.0
 
+# 2024.08.23 이미지 첨부 관련 패키지 설치
+  image_picker: ^0.8.4+3
+  firebase_storage: ^11.6.0
 
 dev_dependencies:
   flutter_test:
