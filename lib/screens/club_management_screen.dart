@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'members_screen.dart';
+import 'event_calendar_screen.dart';  // 캘린더 화면 import 추가
 
 class ClubManagementScreen extends StatefulWidget {
   final String clubId;
@@ -277,9 +278,15 @@ class _ClubManagementScreenState extends State<ClubManagementScreen> {
           SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
-              // Create a new meeting 기능
+              // 캘린더 화면으로 이동하도록 수정
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EventCalendarScreen(clubId: widget.clubId),
+                ),
+              );
             },
-            child: Text("CREATE A NEW MEETING"),
+            child: Text("VIEW CALENDAR"),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
             ),

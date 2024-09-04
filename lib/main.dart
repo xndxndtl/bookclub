@@ -6,12 +6,26 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:bookclub.app/firebase_options.dart';
 import 'screens/sign_in_screen.dart';
 import 'screens/home_screen.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Initialize Firebase App Check
+  await FirebaseAppCheck.instance.activate(
+    // webRecaptchaSiteKey: 'your-site-key',  // 웹인 경우 site-key 필요
+    // Android에서는 Play Integrity API 사용 가능
+    // androidProvider: AndroidProvider.playIntegrity,
+    androidProvider: AndroidProvider.debug, // 앱체크 비활성화
+    // appleProvider: AppleProvider.debug,
+  );
+
+
+
   runApp(MyApp());
 }
 
