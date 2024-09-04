@@ -2,6 +2,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- 2024.08.23 사진 업로드 기능 구현 시 아래 4줄 추가. 2번째 줄은 에러발생하여 추가수정항목 -->
+
     <uses-permission android:name="android.permission.CAMERA"
         tools:ignore="PermissionImpliesUnsupportedChromeOsHardware" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
