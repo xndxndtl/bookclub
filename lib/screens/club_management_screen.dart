@@ -60,6 +60,30 @@ class _ClubManagementScreenState extends State<ClubManagementScreen> {
     }
   }
 
+  String? currentUserRole;
+
+  @override
+  void initState() {
+  super.initState();
+  _getCurrentUserRole();
+  }
+
+  // 현재 사용자의 역할 가져오기
+  void _getCurrentUserRole() async {
+  String userId = FirebaseAuth.instance.currentUser!.uid;
+
+  DocumentSnapshot clubSnapshot = await FirebaseFirestore.instance
+      .collection('clubs')
+      .doc(widget.clubId)
+      .get();
+
+  Map<String, dynamic> members = clubSnapshot['members'];
+  setState(() {
+  currentUserRole = members[userId]['role']; // 역할 저장
+  });
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
