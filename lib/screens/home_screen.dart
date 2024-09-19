@@ -85,6 +85,7 @@ class HomeScreenContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          /*  2024.09.19 불필요 항목 숨김처리
           // Upcoming events section
           Text(
             "Upcoming events",
@@ -103,6 +104,8 @@ class HomeScreenContent extends StatelessWidget {
             ),
           ),
           SizedBox(height: 24),
+
+          */
 
           // Browse and Create Club section
           Row(
@@ -194,8 +197,8 @@ class HomeScreenContent extends StatelessWidget {
                   await FirebaseFirestore.instance.collection('clubs').add({
                     'name': clubNameController.text,
                     'description': clubDescriptionController.text,
-                    'createdBy': FirebaseAuth.instance.currentUser?.uid,
-                    'createdAt': FieldValue.serverTimestamp(),
+                   // 'createdBy': FirebaseAuth.instance.currentUser?.uid,
+                   // 'createdAt': FieldValue.serverTimestamp(),
                   });
 
                   Navigator.pop(context);
