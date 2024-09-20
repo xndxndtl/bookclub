@@ -1,5 +1,5 @@
 // lib/main.dart
-
+/*
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -91,33 +91,44 @@ class AuthWrapper extends StatelessWidget {
     );
   }
 }
+*/
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:bookclub.app/firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:bookclub.app/screens/sign_in_screen.dart';
+import 'package:bookclub.app/screens/home_screen.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:bookclub.app/screens/nickname_screen.dart';
+import 'package:bookclub.app/screens/welcome_screen.dart'; // WelcomeScreen 임포트
 
-/*
-class AuthWrapper extends StatelessWidget {
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Initialize Firebase App Check
+  await FirebaseAppCheck.instance.activate(
+    androidProvider: AndroidProvider.playIntegrity,
+  );
+
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // FirebaseAuth를 사용해 현재 로그인된 유저를 확인
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        // 사용자가 로그인되어 있다면 HomeScreen으로 이동, 아니면 SignInScreen
-        if (snapshot.connectionState == ConnectionState.active) {
-          User? user = snapshot.data;
-          if (user == null) {
-            return SignInScreen();  // 로그인하지 않은 경우
-          } else {
-            return HomeScreen();  // 로그인된 경우
-          }
-        } else {
-          // 로딩 화면 표시
-          return Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-      },
+    return MaterialApp(
+      title: 'Book Club App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      // 처음 화면은 WelcomeScreen으로 설정
+      home: WelcomeScreen(),
     );
   }
 }
-*/

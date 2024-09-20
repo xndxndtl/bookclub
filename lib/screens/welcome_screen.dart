@@ -1,28 +1,29 @@
 import 'package:flutter/material.dart';
-import 'auth_wrapper.dart'; // AuthWrapper 임포트
+import 'auth_wrapper.dart'; // AuthWrapper로의 네비게이션
 
 class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
+      body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,  // 세로축 중앙 정렬
+          crossAxisAlignment: CrossAxisAlignment.center, // 가로축 중앙 정렬
           children: [
+            // 이미지 추가 (로컬 이미지 사용)
             Image.asset(
-              'assets/images/book_club.jpg',  // 로컬 이미지 경로
-              height: 250,
+              'assets/images/book_club.png', // 로컬 이미지 경로
+              height: 200,
+              width: 200,
             ),
             const SizedBox(height: 20),
             const Text(
               'BookClub',
               style: TextStyle(
-                fontSize: 36,
-                color: Colors.white,
+                fontSize: 32,
                 fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 10),
@@ -30,13 +31,13 @@ class WelcomeScreen extends StatelessWidget {
               'Connect with book lovers',
               style: TextStyle(
                 fontSize: 18,
-                color: Colors.white54,
+                color: Colors.white60,
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 40),
             ElevatedButton(
               onPressed: () {
-                // "Get Started" 버튼을 누르면 AuthWrapper로 이동
+                // 'Get Started' 버튼을 누르면 AuthWrapper로 이동
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => AuthWrapper()),
