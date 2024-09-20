@@ -1,11 +1,10 @@
-// lib/screens/home_screen.dart
-
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'my_clubs_screen.dart';
 import 'profile_screen.dart';
 import 'settings_screen.dart';
+import 'upcoming_events_screen.dart'; // UpcomingEventsScreen 임포트
+import 'current_reading_books_screen.dart'; // CurrentlyReadingBooksScreen 임포트
+import 'topic_search_screen.dart'; // TopicSearchScreen 임포트
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -18,6 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static List<Widget> _widgetOptions = <Widget>[
     HomeScreenContent(),
     MyClubsScreen(),
+    TopicSearchScreen(), // '발제문' 메뉴에서 호출될 화면
     ProfileScreen(),
     SettingsScreen(),
   ];
@@ -32,7 +32,19 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Home"),
+        backgroundColor: Colors.black,
+        title: Text(
+          "BookClub",
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CircleAvatar(
+            // backgroundImage: AssetImage('assets/images/profile_image.png'), // 프로필 이미지 경로 설정
+            radius: 20,
+          ),
+        ),
         actions: [
           IconButton(
             icon: Icon(Icons.notifications),
@@ -40,37 +52,38 @@ class _HomeScreenState extends State<HomeScreen> {
               // 알림 기능 추가
             },
           ),
-          IconButton(
-            icon: Icon(Icons.message),
-            onPressed: () {
-              // 메시지 기능 추가
-            },
-          ),
         ],
       ),
+      backgroundColor: Colors.black,
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,  // 모든 아이템이 항상 표시되도록 설정
+        type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'Home',
+            label: '홈',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.group),
-            label: 'My Clubs',
+            label: '북클럽',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: '발제문',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: 'Profile',
+            label: '내 정보',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
-            label: 'Settings',
+            label: '설정',
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.orange,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.grey,
+        backgroundColor: Colors.black,
         onTap: _onItemTapped,
       ),
     );
@@ -85,134 +98,32 @@ class HomeScreenContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /*  2024.09.19 불필요 항목 숨김처리
-          // Upcoming events section
-          Text(
-            "Upcoming events",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 8),
-          ElevatedButton(
-            onPressed: () {
-              // 일정 예약 기능 추가
-            },
-            child: Text("Schedule your next meeting"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-              side: BorderSide(color: Colors.grey),
+          // Upcoming Events Section
+          const Text(
+            'Upcoming Events',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 16),
+          UpcomingEventsScreen(), // 별도 파일로 분리된 UpcomingEventsScreen 사용
 
-          */
-
-          // Browse and Create Club section
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Expanded(
-                child: _buildActionCard(
-                  context,
-                  icon: Icons.search,
-                  label: "Browse public clubs",
-                  onTap: () {
-                    // 클럽 검색 기능 추가
-                  },
-                ),
-              ),
-              SizedBox(width: 16),  // 간격 추가
-              Expanded(
-                child: _buildActionCard(
-                  context,
-                  icon: Icons.add,
-                  label: "Create a new club",
-                  onTap: () {
-                    _createNewClub(context);
-                  },
-                ),
-              ),
-            ],
+          const SizedBox(height: 32),
+          // Currently Reading Books Section
+          const Text(
+            '현재 읽고 있는 책',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 16),
+          CurrentlyReadingBooksScreen(), // 별도 파일로 분리된 CurrentlyReadingBooksScreen 사용
         ],
       ),
-    );
-  }
-
-  Widget _buildActionCard(BuildContext context,
-      {required IconData icon, required String label, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        color: Colors.orange[50],
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Icon(icon, size: 36, color: Colors.orange),
-              SizedBox(height: 8),
-              Text(label, style: TextStyle(fontSize: 16, color: Colors.orange)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // 클럽 생성 로직
-  Future<void> _createNewClub(BuildContext context) async {
-    TextEditingController clubNameController = TextEditingController();
-    TextEditingController clubDescriptionController = TextEditingController();
-
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Create a New Club"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              TextField(
-                controller: clubNameController,
-                decoration: InputDecoration(labelText: "Club Name"),
-              ),
-              TextField(
-                controller: clubDescriptionController,
-                decoration: InputDecoration(labelText: "Club Description"),
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (clubNameController.text.isNotEmpty &&
-                    clubDescriptionController.text.isNotEmpty) {
-                  // 클럽 생성 후 성공 화면으로 이동
-                  await FirebaseFirestore.instance.collection('clubs').add({
-                    'name': clubNameController.text,
-                    'description': clubDescriptionController.text,
-                   // 'createdBy': FirebaseAuth.instance.currentUser?.uid,
-                   // 'createdAt': FieldValue.serverTimestamp(),
-                  });
-
-                  Navigator.pop(context);
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => MyClubsScreen()),
-                  );
-                }
-              },
-              child: Text("Create"),
-            ),
-          ],
-        );
-      },
     );
   }
 }
