@@ -1,4 +1,3 @@
-// lib/screens/my_clubs_screen.dart
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,8 +19,16 @@ class MyClubsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("My Clubs"),
+        title: Text(
+          "My Clubs",
+          style: TextStyle(
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Colors.black,
+        iconTheme: IconThemeData(color: Colors.green),
       ),
+      backgroundColor: Colors.black,
       body: StreamBuilder<QuerySnapshot>(
         stream: getUserClubs(),
         builder: (context, snapshot) {
@@ -29,7 +36,12 @@ class MyClubsScreen extends StatelessWidget {
             return Center(child: CircularProgressIndicator());
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(child: Text("You aren't a member of any clubs"));
+            return Center(
+              child: Text(
+                "You aren't a member of any clubs",
+                style: TextStyle(color: Colors.white70),
+              ),
+            );
           }
           final clubs = snapshot.data!.docs;
           return ListView.builder(
@@ -45,6 +57,7 @@ class MyClubsScreen extends StatelessWidget {
                   : [];
 
               return Card(
+                color: Colors.grey[900],
                 margin: EdgeInsets.only(bottom: 16.0),
                 elevation: 2.0,
                 shape: RoundedRectangleBorder(
@@ -52,18 +65,22 @@ class MyClubsScreen extends StatelessWidget {
                 ),
                 child: ListTile(
                   contentPadding: EdgeInsets.all(16.0),
-                  leading: Icon(Icons.groups, size: 48, color: Colors.orange),
+                  leading: Icon(Icons.groups, size: 48, color: Colors.green),
                   title: Text(
                     clubData?['name'] ?? 'Unnamed Club',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: Colors.white,
+                    ),
                   ),
                   subtitle: Row(
                     children: [
-                      Icon(Icons.person, size: 16),
+                      Icon(Icons.person, size: 16, color: Colors.white70),
                       SizedBox(width: 4),
                       Text(
                         "${members.length} Member${members.length > 1 ? 's' : ''}",
-                        style: TextStyle(fontSize: 14),
+                        style: TextStyle(fontSize: 14, color: Colors.white70),
                       ),
                     ],
                   ),
@@ -92,11 +109,14 @@ class MyClubsScreen extends StatelessWidget {
           onPressed: () async {
             await _clubService.createNewClub(context);  // ClubService 사용
           },
-          icon: Icon(Icons.add),
-          label: Text("Create a new club"),
+          icon: Icon(Icons.add, color: Colors.black),
+          label: Text(
+            "Create a new club",
+            style: TextStyle(color: Colors.black),
+          ),
           style: ElevatedButton.styleFrom(
             padding: EdgeInsets.symmetric(vertical: 16.0),
-            backgroundColor: Colors.orange,
+            backgroundColor: Colors.green, // 버튼 배경색을 그린으로 설정
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),

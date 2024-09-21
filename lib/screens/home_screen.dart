@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'my_clubs_screen.dart';
 import 'profile_screen.dart';
 import 'settings_screen.dart';
-import 'upcoming_events_screen.dart'; // UpcomingEventsScreen 임포트
+import '../services/upcoming_events_screen.dart'; // UpcomingEventsScreen 임포트
 import 'current_reading_books_screen.dart'; // CurrentlyReadingBooksScreen 임포트
 import 'topic_search_screen.dart'; // TopicSearchScreen 임포트
 
