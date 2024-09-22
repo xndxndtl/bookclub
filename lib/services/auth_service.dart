@@ -9,7 +9,11 @@ class AuthService {
 
   // Google Sign-In
   Future<UserCredential> signInWithGoogle() async {
-    final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+    // 2024.09.22 아래 구글 로그인 에러 관련 임시 수정 내역
+    // final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+    final GoogleSignInAccount? googleUser = await GoogleSignIn(scopes: ["profile", "email"]).signIn();
+
     final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
     final AuthCredential credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,

@@ -7,31 +7,41 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:604987238080:android:d5e676453945252ac02f25",
-        "android_client_info": {
-          "package_name": "bookclub.app"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyAc61Hf1DdK32mDrxYjDNXR4HeNNiIKR2I"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:604987238080:android:52762004090472b7c02f25",
         "android_client_info": {
           "package_name": "com.example.bookclub"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "604987238080-mkrog5ld58dead5v204vcirlu0iq3q3s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bookclub",
+            "certificate_hash": "c4207fcac0c3b4f11c29726c34a090468d0c0df3"
+          }
+        },
+        {
+          "client_id": "604987238080-r5700j9u2dvm1pdukdcj9bvtctoc7uqr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bookclub",
+            "certificate_hash": "cfd7c7867fcbfeed25b34039eaa888ae29f23d24"
+          }
+        },
+        {
+          "client_id": "604987238080-u5fo54m1tboo1rs5rg51ruqsu5dmrhjj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bookclub",
+            "certificate_hash": "39f512cf80b2838975dcb203471c41de5b31566d"
+          }
+        },
+        {
+          "client_id": "604987238080-aju9dh693s4kiaipuh35kiv6ilfojjf7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAc61Hf1DdK32mDrxYjDNXR4HeNNiIKR2I"
@@ -39,7 +49,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "604987238080-aju9dh693s4kiaipuh35kiv6ilfojjf7.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "604987238080-5e4en05pk4l0odobeqb9ur3boj9rc8kh.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.bookclub"
+              }
+            }
+          ]
         }
       }
     }

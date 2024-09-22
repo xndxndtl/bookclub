@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'auth_wrapper.dart'; // AuthWrapper로의 네비게이션
+import 'sign_in_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   @override
