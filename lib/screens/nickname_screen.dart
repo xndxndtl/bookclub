@@ -83,7 +83,7 @@ class _NicknameScreenState extends State<NicknameScreen> {
               radius: 60,
               backgroundImage: _profileImage != null
                   ? FileImage(_profileImage!)
-                  : const AssetImage('assets/images/default_avatar.png')
+                  : const AssetImage('assets/images/default_profile.png')
               as ImageProvider, // 기본 이미지 사용
             ),
             const SizedBox(height: 10),
