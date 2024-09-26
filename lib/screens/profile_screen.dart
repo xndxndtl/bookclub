@@ -37,18 +37,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadProfile() async {
     User? user = _auth.currentUser;
     if (user != null) {
-      DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
-      if (userDoc.exists) {
-        setState(() {
-          _nickname = userDoc['nickname'];
-          _location = userDoc['location'];
-          _bio = userDoc['bio'];
-          _profileImageUrl = userDoc['profileImageUrl']; // Firestore에서 저장된 이미지 URL 불러오기
-          _joinedDate = (userDoc['joinedDate'] as Timestamp).toDate();
-          _nicknameController.text = _nickname!;
-          _locationController.text = _location ?? '';
-          _bioController.text = _bio ?? '';
-        });
+      try {
+        DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
+        final userData = userDoc.data() as Map<String, dynamic>?; // 데이터가 null일 수 있으므로 안전하게 캐스팅
+        if (userData != null) {
+          setState(() {
+            // 각 필드를 불러오면서 없으면 기본값 설정
+            _nickname = userData.containsKey('nickname') ? userData['nickname'] : 'No nickname';
+            _location = userData.containsKey('location') ? userData['location'] : 'No location';
+            _bio = userData.containsKey('bio') ? userData['bio'] : 'No bio available';
+            _profileImageUrl = userData.containsKey('profileImageUrl') ? userData['profileImageUrl'] : null;
+            _joinedDate = userData.containsKey('joinedDate')
+                ? (userData['joinedDate'] as Timestamp).toDate()
+                : null;
+
+            _nicknameController.text = _nickname!;
+            _locationController.text = _location ?? '';
+            _bioController.text = _bio ?? '';
+          });
+        }
+      } catch (e) {
+        print('Error loading profile: $e');
       }
     }
   }
@@ -150,7 +159,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ? FileImage(_profileImage!)
                         : _profileImageUrl != null
                         ? NetworkImage(_profileImageUrl!) as ImageProvider
-                        : AssetImage('assets/images/default_profile.png'),
+                        : AssetImage('assets/default_profile.png'),
                     backgroundColor: Colors.grey[800],
                   ),
                   Positioned(

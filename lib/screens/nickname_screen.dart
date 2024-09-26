@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:bookclub.app/screens/home_screen.dart';
-import 'package:image_picker/image_picker.dart'; // 이미지 선택 패키지 추가
+import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart'; // Firebase Storage 패키지 추가
 
 class NicknameScreen extends StatefulWidget {
   @override
@@ -12,7 +13,7 @@ class NicknameScreen extends StatefulWidget {
 
 class _NicknameScreenState extends State<NicknameScreen> {
   final TextEditingController _nicknameController = TextEditingController();
-  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
   bool _isSaving = false;
   File? _profileImage; // 선택된 프로필 이미지 파일
 
@@ -26,22 +27,47 @@ class _NicknameScreenState extends State<NicknameScreen> {
     }
   }
 
-  // 닉네임 및 주소 저장 함수
-  void _saveProfile() async {
+  // 프로필 이미지 업로드 함수
+  Future<String?> _uploadProfileImage(String userId) async {
+    if (_profileImage != null) {
+      try {
+        final storageRef = FirebaseStorage.instance
+            .ref()
+            .child('profile_images/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg');
+        await storageRef.putFile(_profileImage!);
+        final downloadUrl = await storageRef.getDownloadURL();
+        return downloadUrl; // 업로드한 이미지의 URL 반환
+      } catch (e) {
+        print('Error uploading profile image: $e');
+        return null; // 오류 발생 시 null 반환
+      }
+    }
+    return null; // 이미지가 없으면 null 반환
+  }
+
+  // 닉네임, 위치, 프로필 이미지 URL, 가입 날짜를 Firestore에 저장하는 함수
+  Future<void> _saveProfile() async {
     setState(() {
       _isSaving = true;
     });
 
     String nickname = _nicknameController.text.trim();
-    String address = _addressController.text.trim();
+    String location = _locationController.text.trim();
     String userId = FirebaseAuth.instance.currentUser!.uid;
 
-    if (nickname.isNotEmpty && address.isNotEmpty) {
-      // Firestore에 닉네임 및 주소 저장
+    if (nickname.isNotEmpty && location.isNotEmpty) {
+      // 이미지 업로드 후 URL 저장
+      String? profileImageUrl = await _uploadProfileImage(userId);
+
+      // 현재 시간으로 가입 날짜 설정
+      DateTime joinDate = DateTime.now();
+
+      // Firestore에 닉네임, 위치, 프로필 이미지 URL, 가입 날짜 저장
       await FirebaseFirestore.instance.collection('users').doc(userId).set({
         'nickname': nickname,
-        'address': address,
-        // TODO: 프로필 이미지 저장 로직 추가 (Firebase Storage 등 사용)
+        'location': location,
+        'profileImageUrl': profileImageUrl, // 업로드된 이미지 URL 저장
+        'joinedDate': joinDate, // 가입 날짜 저장
       });
 
       // 저장 후 메인 화면으로 이동
@@ -117,12 +143,12 @@ class _NicknameScreenState extends State<NicknameScreen> {
             const SizedBox(height: 20),
             // 주소 입력 필드
             TextField(
-              controller: _addressController,
+              controller: _locationController,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                labelText: 'Address',
+                labelText: 'Location',
                 labelStyle: const TextStyle(color: Colors.white),
-                hintText: 'Enter your address',
+                hintText: 'Enter your location',
                 hintStyle: const TextStyle(color: Colors.white54),
                 enabledBorder: OutlineInputBorder(
                   borderSide: const BorderSide(color: Colors.white),
