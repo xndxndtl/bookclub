@@ -2,13 +2,37 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-
-class TopicSearchScreen extends StatefulWidget {
-  @override
-  _TopicSearchScreenState createState() => _TopicSearchScreenState();
+/*
+void main() {
+  runApp(const MyApp());
 }
 
-class _TopicSearchScreenState extends State<TopicSearchScreen> {
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
+        useMaterial3: true,
+      ),
+      home: const HttpApp(),
+    );
+  }
+}
+*/
+
+
+class HttpApp extends StatefulWidget {
+  const HttpApp({Key? key});
+
+  @override
+  State<HttpApp> createState() => _HttpAppState();
+}
+
+class _HttpAppState extends State<HttpApp> {
   List<Map<String, dynamic>> data = [];
   TextEditingController? _editingController;
   ScrollController? _scrollController;
@@ -36,30 +60,19 @@ class _TopicSearchScreenState extends State<TopicSearchScreen> {
       }
     });
 
-    getJSONData(); // 페이지가 처음 로드될 때 초기 데이터 가져오기
+    getJSONData();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
         title: TextField(
           controller: _editingController,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.black),
           keyboardType: TextInputType.text,
-          decoration: const InputDecoration(
-            hintText: '책 제목을 검색하세요',
-            hintStyle: TextStyle(color: Colors.white54),
-          ),
-          onSubmitted: (value) {
-            // 검색어를 제출할 때 데이터를 다시 로드
-            page = 1;
-            data.clear();
-            getJSONData();
-          },
+          decoration: const InputDecoration(hintText: '검색어를 입력하세요'),
         ),
-        backgroundColor: Colors.black,
       ),
       body: Center(
         child: data.isEmpty
@@ -70,7 +83,6 @@ class _TopicSearchScreenState extends State<TopicSearchScreen> {
           itemBuilder: (context, index) {
             if (index < data.length) {
               return Card(
-                color: Colors.grey[900],
                 margin: const EdgeInsets.all(10),
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
@@ -94,25 +106,20 @@ class _TopicSearchScreenState extends State<TopicSearchScreen> {
                           children: <Widget>[
                             Text(
                               data[index]['title'].toString(),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
+                              style:
+                              const TextStyle(fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 5),
                             Text(
                               '저자: ${data[index]['authors'].join(', ')}',
-                              style: TextStyle(color: Colors.white70),
                             ),
                             const SizedBox(height: 5),
                             Text(
                               '가격: ${formatPrice(data[index]['sale_price'])}',
-                              style: TextStyle(color: Colors.white70),
                             ),
                             const SizedBox(height: 5),
                             Text(
                               '상태: ${data[index]['status'].toString()}',
-                              style: TextStyle(color: Colors.white70),
                             ),
                           ],
                         ),
@@ -130,20 +137,18 @@ class _TopicSearchScreenState extends State<TopicSearchScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.green,
         onPressed: () {
           page = 1;
           data.clear();
           getJSONData();
         },
-        child: const Icon(Icons.file_download, color: Colors.white),
+        child: const Icon(Icons.file_download),
       ),
     );
   }
 
   Future<void> getJSONData() async {
-    var url =
-        'https://dapi.kakao.com/v3/search/book?target=title&page=$page&query=${_editingController!.value.text}';
+    var url = 'https://dapi.kakao.com/v3/search/book?target=title&page=$page&query=${_editingController!.value.text}';
     var response = await http.get(Uri.parse(url),
         headers: {"Authorization": "KakaoAK bbe5732d7be1c934639116216a1a4ff4"});
 
@@ -152,7 +157,7 @@ class _TopicSearchScreenState extends State<TopicSearchScreen> {
       List result = dataConvertedToJSON['documents'];
       setState(() {
         data.addAll(result.cast<Map<String, dynamic>>());
-        maxPage = dataConvertedToJSON['meta']['pageable_count']; // 최대 페이지 수 설정
+        maxPage = dataConvertedToJSON['meta']['pageable_count']; // 페이징 정보에서 최대 페이지 수 가져오기
         isLoading = false;
       });
     } else {
